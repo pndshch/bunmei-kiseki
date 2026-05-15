@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>文明軌跡 — Civilization Trajectory | Pinda Lab</title>
+<meta property="og:title" content="文明軌跡 — Civilization Trajectory">
+<meta property="og:description" content="人類の文明を1万年シミュレーション。飢餓から退屈まで。">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0a1117">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{height:100%;overflow:hidden}
+body{background:#0a1117;color:#e6edf3;font-family:'Hiragino Mincho ProN','Noto Serif JP','Yu Mincho',serif;display:flex;flex-direction:column}
+
+.lang-switch{position:fixed;top:10px;right:10px;display:flex;gap:2px;background:rgba(22,27,34,.85);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:3px;z-index:200}
+.lang-btn{background:0 0;border:none;color:#8b949e;font:600 11px/1 system-ui,sans-serif;padding:5px 9px;border-radius:5px;cursor:pointer;transition:all .15s}
+.lang-btn:hover{color:#e6edf3}
+.lang-btn.active{background:#7c3aed;color:#fff}
+
+#scene{position:relative;flex:1;min-height:0;overflow:hidden;transition:background 3s ease}
+#sim-canvas{position:absolute;inset:0;width:100%;height:100%}
+body.era-0 #scene{background:linear-gradient(180deg,#1a0e05 0%,#2d1810 60%,#3a2015 100%)}
+body.era-1 #scene{background:linear-gradient(180deg,#0d1a0a 0%,#1a2a10 60%,#253a18 100%)}
+body.era-2 #scene{background:linear-gradient(180deg,#0d1a2a 0%,#152535 60%,#1a3040 100%)}
+body.era-3 #scene{background:linear-gradient(180deg,#0a1520 0%,#152030 60%,#1a2838 100%)}
+body.era-4 #scene{background:linear-gradient(180deg,#0a0a20 0%,#151530 60%,#1a1a38 100%)}
+body.era-5 #scene{background:linear-gradient(180deg,#08080e 0%,#0e0e18 60%,#141420 100%)}
+
+#dashboard{flex:0 0 auto;background:linear-gradient(180deg,rgba(13,17,23,.95),rgba(10,14,20,.98));border-top:1px solid rgba(255,255,255,.06);padding:8px 14px 12px;display:flex;flex-direction:column;gap:6px;max-height:45vh;overflow-y:auto}
+#topbar{display:flex;align-items:center;justify-content:space-between;font-size:12px;gap:8px}
+#topbar a{color:#7d8590;text-decoration:none;font-family:system-ui,sans-serif;font-size:11px}
+#era-label{font-weight:700;font-size:15px;letter-spacing:1px;flex:1;text-align:center}
+#year-display{color:#7d8590;font-family:system-ui,sans-serif;font-size:11px;font-variant-numeric:tabular-nums}
+
+#era-dots{display:flex;justify-content:center;gap:8px;padding:4px 0}
+.era-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.1);transition:all .5s}
+.era-dot.active{box-shadow:0 0 8px rgba(124,58,237,.5)}
+.era-dot.past{background:rgba(124,58,237,.3)}
+.ec0{background:#cc6600}.ec1{background:#88aa33}.ec2{background:#4499aa}.ec3{background:#5577aa}.ec4{background:#8866bb}.ec5{background:#667788}
+
+#stats{display:flex;flex-direction:column;gap:5px}
+.stat-row{display:flex;align-items:center;gap:6px;font-size:11px;height:22px}
+.stat-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.stat-label{width:30px;flex-shrink:0;font-size:10px;color:#8b949e;font-family:system-ui,sans-serif}
+.stat-bar{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.stat-fill{height:100%;border-radius:3px;transition:width .5s ease;width:0}
+.food-fill{background:linear-gradient(90deg,#cc6600,#daa520)}
+.safety-fill{background:linear-gradient(90deg,#3366aa,#5588cc)}
+.conv-fill{background:linear-gradient(90deg,#338888,#44aaaa)}
+.comfort-fill{background:linear-gradient(90deg,#7744aa,#9966cc)}
+.meaning-fill{background:linear-gradient(90deg,#e8a030,#ffcc44)}
+.boredom-fill{background:linear-gradient(90deg,#555566,#777788)}
+.stat-val{width:32px;text-align:right;font-family:system-ui,sans-serif;font-size:10px;color:#7d8590;font-variant-numeric:tabular-nums}
+
+#bottom-row{display:flex;align-items:center;justify-content:space-between;padding:2px 0}
+#pop-display{font-size:12px;color:#8b949e;font-family:system-ui,sans-serif;font-variant-numeric:tabular-nums}
+#controls{display:flex;align-items:center;gap:6px}
+#controls button{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#e6edf3;font-size:13px;width:32px;height:28px;border-radius:6px;cursor:pointer;transition:all .15s;font-family:system-ui,sans-serif}
+#controls button:hover{background:rgba(255,255,255,.15)}
+#controls button:active{transform:scale(.95)}
+#speed-label{font-size:11px;color:#8b949e;font-family:system-ui,sans-serif;min-width:24px;text-align:center}
+#era-desc{font-size:12px;color:#7d8590;line-height:1.5;min-height:36px}
+
+.overlay{position:fixed;inset:0;background:rgba(5,8,12,.92);display:flex;align-items:center;justify-content:center;z-index:100;opacity:1;transition:opacity .8s ease}
+.overlay.hidden{opacity:0;pointer-events:none}
+.overlay-inner{text-align:center;padding:24px;max-width:380px}
+.overlay-inner h1{font-size:32px;font-weight:700;letter-spacing:2px;margin-bottom:12px}
+#intro h1{background:linear-gradient(135deg,#e8a030,#ffcc44,#e8a030);-webkit-background-clip:text;background-clip:text;color:transparent}
+#ending h1{color:#c0c8d0}
+.intro-sub{font-size:14px;color:#8b949e;margin-bottom:16px;font-family:system-ui,sans-serif;letter-spacing:1px}
+.intro-desc{font-size:13px;color:#7d8590;line-height:1.7;margin-bottom:24px}
+.overlay-btn{background:linear-gradient(135deg,#238636,#2ea043);border:none;color:#fff;font:600 14px/1 system-ui,sans-serif;padding:12px 28px;border-radius:10px;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.overlay-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
+.end-sub{font-size:16px;color:#8b949e;margin-bottom:20px;line-height:1.6}
+.end-reflect{font-size:12px;color:#6d7680;line-height:1.8;margin-bottom:20px}
+.end-btn{background:linear-gradient(135deg,#333,#444)}
+
+#final-stats{margin:16px auto;max-width:260px}
+.fs-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;font-family:system-ui,sans-serif}
+.fs-label{width:40px;text-align:right;color:#8b949e}
+.fs-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.fs-fill{height:100%;border-radius:3px;transition:width 1.5s ease}
+.fs-val{width:32px;text-align:right;color:#7d8590;font-size:10px}
+
+#ending .overlay-inner>*{opacity:0;transform:translateY(8px);transition:opacity 1s ease,transform 1s ease}
+#ending.show .overlay-inner>*{opacity:1;transform:translateY(0)}
+#ending.show .overlay-inner>*:nth-child(1){transition-delay:0s}
+#ending.show .overlay-inner>*:nth-child(2){transition-delay:.8s}
+#ending.show .overlay-inner>*:nth-child(3){transition-delay:1.6s}
+#ending.show .overlay-inner>*:nth-child(4){transition-delay:2.4s}
+#ending.show .overlay-inner>*:nth-child(5){transition-delay:3.2s}
+
+@media(max-height:600px){
+#dashboard{gap:4px;padding:6px 12px 8px}
+.stat-row{height:18px}
+#era-desc{display:none}
+}
+@media(min-width:500px){
+body{max-width:480px;margin:0 auto;border-left:1px solid rgba(255,255,255,.04);border-right:1px solid rgba(255,255,255,.04)}
+}
+</style>
+</head>
+<body class="era-0">
+
+<div class="lang-switch">
+<button class="lang-btn active" data-lang="ja">JP</button>
+<button class="lang-btn" data-lang="en">EN</button>
+</div>
+
+<div id="scene">
+<canvas id="sim-canvas"></canvas>
+</div>
+
+<div id="dashboard">
+<div id="topbar">
+<a href="https://pndshch.github.io/" data-i18n="back">← Pinda Lab</a>
+<span id="era-label" data-i18n="era0">飢餓</span>
+<span id="year-display">0 年</span>
+</div>
+<div id="era-dots">
+<span class="era-dot ec0 active"></span>
+<span class="era-dot ec1"></span>
+<span class="era-dot ec2"></span>
+<span class="era-dot ec3"></span>
+<span class="era-dot ec4"></span>
+<span class="era-dot ec5"></span>
+</div>
+<div id="stats">
+<div class="stat-row"><span class="stat-icon">🍖</span><span class="stat-label" data-i18n="sFood">食</span><div class="stat-bar"><div class="stat-fill food-fill" id="bar-food"></div></div><span class="stat-val" id="val-food">0%</span></div>
+<div class="stat-row"><span class="stat-icon">🛡️</span><span class="stat-label" data-i18n="sSafety">安全</span><div class="stat-bar"><div class="stat-fill safety-fill" id="bar-safety"></div></div><span class="stat-val" id="val-safety">0%</span></div>
+<div class="stat-row"><span class="stat-icon">⚙️</span><span class="stat-label" data-i18n="sConv">便利</span><div class="stat-bar"><div class="stat-fill conv-fill" id="bar-conv"></div></div><span class="stat-val" id="val-conv">0%</span></div>
+<div class="stat-row"><span class="stat-icon">✨</span><span class="stat-label" data-i18n="sComfort">快適</span><div class="stat-bar"><div class="stat-fill comfort-fill" id="bar-comfort"></div></div><span class="stat-val" id="val-comfort">0%</span></div>
+<div class="stat-row"><span class="stat-icon">💡</span><span class="stat-label" data-i18n="sMeaning">意味</span><div class="stat-bar"><div class="stat-fill meaning-fill" id="bar-meaning"></div></div><span class="stat-val" id="val-meaning">85%</span></div>
+<div class="stat-row"><span class="stat-icon">😶</span><span class="stat-label" data-i18n="sBoredom">退屈</span><div class="stat-bar"><div class="stat-fill boredom-fill" id="bar-boredom"></div></div><span class="stat-val" id="val-boredom">0%</span></div>
+</div>
+<div id="bottom-row">
+<div id="pop-display">👤 <span id="pop-count">0</span></div>
+<div id="controls">
+<button id="btn-slower">◀</button>
+<span id="speed-label">1x</span>
+<button id="btn-faster">▶</button>
+<button id="btn-pause">⏸</button>
+<button id="btn-reset">↻</button>
+</div>
+</div>
+<div id="era-desc">
+<p id="era-text" data-i18n="desc0">食べ物を探し、火を守り、明日を生き延びることだけが全て。</p>
+</div>
+</div>
+
+<div class="overlay" id="intro">
+<div class="overlay-inner">
+<h1 data-i18n="introTitle">文明軌跡</h1>
+<p class="intro-sub" data-i18n="introSub">Civilization Trajectory</p>
+<p class="intro-desc" data-i18n="introDesc">人類の文明を1万年シミュレーション。<br>飢餓から退屈まで——すべてが満たされた先に何が待つ?</p>
+<button class="overlay-btn" id="btn-start" data-i18n="introStart">▶ シミュレーションを開始</button>
+</div>
+</div>
+
+<div class="overlay hidden" id="ending">
+<div class="overlay-inner">
+<h1 data-i18n="endTitle">全てが満たされた。</h1>
+<p class="end-sub" data-i18n="endSub">なのに、何かが足りない。</p>
+<div id="final-stats"></div>
+<p class="end-reflect" data-i18n="endReflect">飢えは消えた。危険も消えた。不便も消えた。<br>それでも人は問い続ける——「なぜ生きているのか？」<br><br>皮肉にも、すべてを手に入れた先に、<br>もっとも原始的な問いが待っていた。</p>
+<button class="overlay-btn end-btn" id="btn-restart" data-i18n="endRestart">↻ もう一度</button>
+</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var YEAR_PER_SEC = 50;
+var SPEEDS = [0.5, 1, 2, 4];
+var ERA_TH = [0, 1600, 3200, 5000, 7000, 8500];
+var ERA_PCOL = ['#e88633','#7aaa33','#3399aa','#5580aa','#8866bb','#667788'];
+var ERA_GROUND = ['#4a2c17','#2d4a1c','#3a4a4a','#2a3040','#252535','#1a1a20'];
+var ERA_BLDG = ['#5a3a25','#3a4a2a','#3a4a4a','#2a3040','#2a2a45','#1c1c28'];
+var ERA_THOUGHTS = [
+  ['\u{1F356}','\u{1F525}','\u{1F480}','\u{1F327}','\u{1F630}'],
+  ['\u{1F33E}','\u{1F3E0}','\u{1F476}','☀','\u{1F60A}'],
+  ['\u{1F528}','\u{1FA99}','\u{1F4D6}','⚙','\u{1F4AA}'],
+  ['\u{1F6E1}','\u{1F48A}','\u{1F4DC}','⚖','\u{1F60C}'],
+  ['✨','\u{1F3B5}','\u{1F3AE}','\u{1F377}','❓'],
+  ['❓','…','','\u{1F4AD}','']
+];
+var CLUSTERS = [[.15,.6],[.38,.65],[.62,.55],[.85,.6]];
+
+var I18N = {
+  ja: {
+    back:'← Pinda Lab',
+    era0:'飢餓',era1:'実り',era2:'便利',era3:'安全',era4:'快適',era5:'退屈',
+    desc0:'食べ物を探し、火を守り、明日を生き延びることだけが全て。',
+    desc1:'農耕が始まり、食料の余剰が生まれた。人々は集まり、村を作る。',
+    desc2:'道具、車輪、文字——人間は世界を便利にする方法を見つけた。',
+    desc3:'医療、城壁、法律——死ぬことが難しくなった。',
+    desc4:'技術と余暇。生活はかつてないほど快適に。しかし……',
+    desc5:'全てが揃った。なのに、心は空っぽだ。',
+    sFood:'食',sSafety:'安全',sConv:'便利',sComfort:'快適',sMeaning:'意味',sBoredom:'退屈',
+    introTitle:'文明軌跡',
+    introSub:'Civilization Trajectory',
+    introDesc:'人類の文明を1万年シミュレーション。<br>飢餓から退屈まで——すべてが満たされた先に何が待つ?',
+    introStart:'▶ シミュレーションを開始',
+    endTitle:'全てが満たされた。',
+    endSub:'なのに、何かが足りない。',
+    endReflect:'飢えは消えた。危険も消えた。不便も消えた。<br>それでも人は問い続ける——「なぜ生きているのか？」<br><br>皮肉にも、すべてを手に入れた先に、<br>もっとも原始的な問いが待っていた。',
+    endRestart:'↻ もう一度'
+  },
+  en: {
+    back:'← Pinda Lab',
+    era0:'Hunger',era1:'Harvest',era2:'Convenience',era3:'Safety',era4:'Comfort',era5:'Boredom',
+    desc0:'Find food. Guard the fire. Survive until tomorrow. That is everything.',
+    desc1:'Agriculture begins. Food surplus appears. People gather and build villages.',
+    desc2:'Tools, wheels, writing — humans reshape the world for convenience.',
+    desc3:'Medicine, walls, laws — dying becomes difficult.',
+    desc4:'Technology and leisure. Life has never been more comfortable. And yet...',
+    desc5:'Everything is in place. Yet the heart is empty.',
+    sFood:'Food',sSafety:'Safety',sConv:'Conv.',sComfort:'Comf.',sMeaning:'Mean.',sBoredom:'Bore.',
+    introTitle:'Civilization<br>Trajectory',
+    introSub:'文明軌跡',
+    introDesc:'A 10,000-year simulation of human civilization.<br>From hunger to boredom — what awaits when every need is met?',
+    introStart:'▶ Begin Simulation',
+    endTitle:'Everything is fulfilled.',
+    endSub:'And yet, something is missing.',
+    endReflect:'Hunger vanished. Danger vanished. Inconvenience vanished.<br>Yet humans keep asking: "Why am I alive?"<br><br>Ironically, at the end of having everything,<br>the most primitive question awaited.',
+    endRestart:'↻ Once More'
+  }
+};
+
+var $ = function(id){ return document.getElementById(id); };
+var canvas = $('sim-canvas');
+var ctx = canvas.getContext('2d');
+var scene = $('scene');
+var eraDots = document.querySelectorAll('.era-dot');
+
+var lang = 'ja';
+var year = 0;
+var era = 0;
+var speedIdx = 1;
+var paused = true;
+var ended = false;
+var particles = [];
+var lastTick = 0;
+
+var buildings = [];
+(function(){
+  for (var i = 0; i < 35; i++) {
+    buildings.push({
+      x: (i + .2 + Math.random() * .6) / 35,
+      w: .006 + Math.random() * .016,
+      maxH: .02 + Math.pow(Math.random(), 1.5) * .35,
+      startYear: 1200 + Math.random() * 5500
+    });
+  }
+  buildings.sort(function(a,b){ return a.x - b.x; });
+})();
+
+function sigmoid(x){ return 1 / (1 + Math.exp(-x)); }
+function clamp(v, lo, hi){ return v < lo ? lo : v > hi ? hi : v; }
+
+function getEra(y){
+  for (var i = ERA_TH.length - 1; i >= 0; i--){
+    if (y >= ERA_TH[i]) return i;
+  }
+  return 0;
+}
+
+function computeStats(y){
+  return {
+    food: sigmoid((y - 800) / 800),
+    safety: sigmoid((y - 5000) / 1500),
+    convenience: sigmoid((y - 3500) / 1200),
+    comfort: sigmoid((y - 7000) / 800),
+    meaning: 1 - sigmoid((y - 4500) / 1800),
+    boredom: sigmoid((y - 8000) / 600)
+  };
+}
+
+function targetPop(s){
+  return Math.floor(25 + s.food * 200 + s.safety * 150 + s.comfort * 125);
+}
+
+var W = 0, H = 0, dpr = 1;
+function resizeCanvas(){
+  dpr = window.devicePixelRatio || 1;
+  var r = scene.getBoundingClientRect();
+  W = r.width; H = r.height;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resizeCanvas);
+
+function spawnParticle(){
+  return {
+    x: .1 + Math.random() * .8,
+    y: .12 + Math.random() * .58,
+    vx: (Math.random() - .5) * .002,
+    vy: (Math.random() - .5) * .002,
+    opacity: 1,
+    size: 1.5 + Math.random(),
+    thought: null,
+    tTimer: Math.floor(Math.random() * 180),
+    age: 0
+  };
+}
+
+function updateParticle(p, e){
+  p.age++;
+  p.tTimer--;
+
+  if (p.tTimer <= 0){
+    var pool = ERA_THOUGHTS[e];
+    p.thought = Math.random() < .22 ? pool[Math.floor(Math.random() * pool.length)] : null;
+    p.tTimer = 100 + Math.floor(Math.random() * 140);
+  }
+
+  switch(e){
+    case 0:
+      p.vx += (Math.random() - .5) * .006;
+      p.vy += (Math.random() - .5) * .006;
+      if (Math.random() < .008){
+        var fx = Math.random(), fy = .5 + Math.random() * .3;
+        p.vx += (fx - p.x) * .015;
+        p.vy += (fy - p.y) * .015;
+      }
+      break;
+    case 1:
+      var nearest = CLUSTERS[0], minD = 9;
+      for (var ci = 0; ci < CLUSTERS.length; ci++){
+        var dd = Math.hypot(p.x - CLUSTERS[ci][0], p.y - CLUSTERS[ci][1]);
+        if (dd < minD){ minD = dd; nearest = CLUSTERS[ci]; }
+      }
+      p.vx += (nearest[0] - p.x) * .002;
+      p.vy += (nearest[1] - p.y) * .002;
+      p.vx += (Math.random() - .5) * .002;
+      p.vy += (Math.random() - .5) * .002;
+      break;
+    case 2:
+      var gx = Math.round(p.x * 10) / 10;
+      var gy = Math.round(p.y * 8) / 8;
+      p.vx += (gx - p.x) * .004;
+      p.vy += (gy - p.y) * .004;
+      p.vx += (Math.random() > .5 ? 1 : -1) * .0008;
+      break;
+    case 3:
+      p.vx += (.5 - p.x) * .0008;
+      p.vy += (.55 - p.y) * .0008;
+      p.vx += (Math.random() - .5) * .0004;
+      p.vy += (Math.random() - .5) * .0004;
+      break;
+    case 4:
+      var dx4 = p.x - .5, dy4 = p.y - .5;
+      var a4 = Math.atan2(dy4, dx4);
+      p.vx += Math.cos(a4 + Math.PI / 2) * .0004;
+      p.vy += Math.sin(a4 + Math.PI / 2) * .0004;
+      p.vx += (.5 - p.x) * .0004;
+      p.vy += (.5 - p.y) * .0004;
+      p.vx += (Math.random() - .5) * .0006;
+      p.vy += (Math.random() - .5) * .0006;
+      break;
+    case 5:
+      p.vx *= .9;
+      p.vy *= .9;
+      if (Math.random() < .003){
+        p.vx += (Math.random() - .5) * .002;
+        p.vy += (Math.random() - .5) * .002;
+      }
+      var bp = clamp((year - 8500) / 1500, 0, 1);
+      p.opacity = Math.max(.15, .8 - bp * .55);
+      break;
+  }
+
+  var damp = e <= 1 ? .98 : .95;
+  p.vx *= damp;
+  p.vy *= damp;
+  var spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+  var maxSpd = e === 0 ? .006 : e <= 2 ? .004 : .002;
+  if (spd > maxSpd){ p.vx *= maxSpd / spd; p.vy *= maxSpd / spd; }
+
+  p.x += p.vx;
+  p.y += p.vy;
+  if (p.x < .02){ p.x = .02; p.vx = Math.abs(p.vx); }
+  if (p.x > .98){ p.x = .98; p.vx = -Math.abs(p.vx); }
+  if (p.y < .08){ p.y = .08; p.vy = Math.abs(p.vy); }
+  if (p.y > .82){ p.y = .82; p.vy = -Math.abs(p.vy); }
+}
+
+function render(){
+  ctx.clearRect(0, 0, W, H);
+  if (W === 0) return;
+  var e = getEra(year);
+  var groundH = H * .08;
+
+  ctx.fillStyle = ERA_GROUND[e];
+  ctx.fillRect(0, H - groundH, W, groundH);
+
+  var bc = ERA_BLDG[e];
+  for (var bi = 0; bi < buildings.length; bi++){
+    var b = buildings[bi];
+    var prog = clamp((year - b.startYear) / 2500, 0, 1);
+    if (prog <= 0) continue;
+    var bh = b.maxH * prog * H;
+    var bx = b.x * W;
+    var bw = Math.max(b.w * W, 2);
+    ctx.fillStyle = bc;
+    ctx.fillRect(bx, H - groundH - bh, bw, bh);
+    if (bh > 15 && e >= 2){
+      var nw = Math.floor(bh / 10);
+      for (var wi = 0; wi < nw; wi++){
+        if (Math.random() < .25){
+          ctx.fillStyle = e >= 5 ? 'rgba(255,255,255,.06)' : e >= 4 ? 'rgba(200,180,255,.1)' : 'rgba(255,215,0,.12)';
+          ctx.fillRect(bx + 1 + Math.random() * Math.max(0, bw - 3), H - groundH - bh + 3 + wi * 10, 1.5, 1.5);
+        }
+      }
+    }
+  }
+
+  if (e === 5){
+    var bp5 = clamp((year - 8500) / 1500, 0, 1);
+    ctx.fillStyle = 'rgba(10,10,15,' + (bp5 * .3).toFixed(2) + ')';
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  var pc = ERA_PCOL[e];
+  for (var pi = 0; pi < particles.length; pi++){
+    var p = particles[pi];
+    var px = p.x * W;
+    var py = p.y * H;
+
+    ctx.globalAlpha = p.opacity * .2;
+    ctx.fillStyle = pc;
+    ctx.beginPath();
+    ctx.arc(px, py, p.size * 3, 0, 6.2832);
+    ctx.fill();
+
+    ctx.globalAlpha = p.opacity * .85;
+    ctx.beginPath();
+    ctx.arc(px, py, p.size, 0, 6.2832);
+    ctx.fill();
+
+    if (p.thought && p.thought !== ''){
+      ctx.globalAlpha = p.opacity * .65;
+      ctx.font = '11px system-ui,sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(p.thought, px, py - p.size * 3 - 3);
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  if (year > 9200){
+    var qp = clamp((year - 9200) / 600, 0, 1);
+    var qs = 40 + qp * 80;
+    ctx.globalAlpha = qp * .12;
+    ctx.font = qs + 'px serif';
+    ctx.fillStyle = '#8888aa';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('?', W / 2, H * .4);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function updateUI(stats, e){
+  var bars = [
+    ['food', stats.food], ['safety', stats.safety],
+    ['conv', stats.convenience], ['comfort', stats.comfort],
+    ['meaning', stats.meaning], ['boredom', stats.boredom]
+  ];
+  for (var i = 0; i < bars.length; i++){
+    var pct = Math.round(bars[i][1] * 100);
+    $('bar-' + bars[i][0]).style.width = pct + '%';
+    $('val-' + bars[i][0]).textContent = pct + '%';
+  }
+
+  $('pop-count').textContent = particles.length;
+
+  var y = Math.floor(year);
+  $('year-display').textContent = lang === 'ja' ? y.toLocaleString() + ' 年' : 'Year ' + y.toLocaleString();
+
+  if (e !== era){
+    era = e;
+    document.body.className = 'era-' + e;
+    $('era-label').setAttribute('data-i18n', 'era' + e);
+    $('era-label').textContent = I18N[lang]['era' + e];
+    $('era-text').setAttribute('data-i18n', 'desc' + e);
+    $('era-text').textContent = I18N[lang]['desc' + e];
+    for (var di = 0; di < eraDots.length; di++){
+      var cls = 'era-dot ec' + di;
+      if (di === e) cls += ' active';
+      else if (di < e) cls += ' past';
+      eraDots[di].className = cls;
+    }
+  }
+}
+
+function tick(){
+  if (paused || ended) return;
+
+  var now = performance.now();
+  var dt = Math.min(now - lastTick, 100);
+  lastTick = now;
+
+  year = Math.min(year + SPEEDS[speedIdx] * YEAR_PER_SEC * dt / 1000, 10000);
+  var e = getEra(year);
+  var stats = computeStats(year);
+
+  var target = targetPop(stats);
+  if (particles.length < target && Math.random() < .15){
+    particles.push(spawnParticle());
+  }
+
+  var deathRate = (1 - stats.safety) * .003;
+  for (var di = particles.length - 1; di >= 0; di--){
+    if (Math.random() < deathRate){
+      particles.splice(di, 1);
+    }
+  }
+
+  for (var pi = 0; pi < particles.length; pi++){
+    updateParticle(particles[pi], e);
+  }
+
+  render();
+  updateUI(stats, e);
+
+  if (year >= 10000 && !ended){
+    ended = true;
+    showEnding(stats);
+  }
+}
+
+function showEnding(stats){
+  paused = true;
+  var fs = $('final-stats');
+  var labels = [
+    [I18N[lang].sFood, stats.food, 'food-fill'],
+    [I18N[lang].sSafety, stats.safety, 'safety-fill'],
+    [I18N[lang].sConv, stats.convenience, 'conv-fill'],
+    [I18N[lang].sComfort, stats.comfort, 'comfort-fill'],
+    [I18N[lang].sMeaning, stats.meaning, 'meaning-fill'],
+    [I18N[lang].sBoredom, stats.boredom, 'boredom-fill']
+  ];
+  fs.innerHTML = labels.map(function(it){
+    var pct = Math.round(it[1] * 100);
+    return '<div class="fs-row"><span class="fs-label">' + it[0] +
+      '</span><div class="fs-bar"><div class="fs-fill ' + it[2] +
+      '" style="width:0"></div></div><span class="fs-val">' + pct + '%</span></div>';
+  }).join('');
+
+  var el = $('ending');
+  el.classList.remove('hidden');
+  setTimeout(function(){
+    el.classList.add('show');
+    setTimeout(function(){
+      var fills = el.querySelectorAll('.fs-fill');
+      for (var i = 0; i < fills.length; i++){
+        fills[i].style.width = Math.round(labels[i][1] * 100) + '%';
+      }
+    }, 1800);
+  }, 50);
+}
+
+function resetSim(){
+  year = 0; era = 0; speedIdx = 1; paused = true; ended = false;
+  particles = [];
+  document.body.className = 'era-0';
+  $('speed-label').textContent = '1x';
+  $('btn-pause').textContent = '⏸';
+  var stats = computeStats(0);
+  updateUI(stats, 0);
+  for (var i = 0; i < eraDots.length; i++){
+    eraDots[i].className = 'era-dot ec' + i + (i === 0 ? ' active' : '');
+  }
+  render();
+}
+
+$('btn-start').addEventListener('click', function(){
+  $('intro').classList.add('hidden');
+  resizeCanvas();
+  for (var i = 0; i < 25; i++) particles.push(spawnParticle());
+  paused = false;
+  lastTick = performance.now();
+  $('btn-pause').textContent = '⏸';
+  render();
+});
+
+$('btn-restart').addEventListener('click', function(){
+  $('ending').classList.remove('show');
+  $('ending').classList.add('hidden');
+  resetSim();
+  $('intro').classList.remove('hidden');
+});
+
+$('btn-pause').addEventListener('click', function(){
+  if (ended) return;
+  paused = !paused;
+  if (!paused) lastTick = performance.now();
+  this.textContent = paused ? '▶' : '⏸';
+});
+
+$('btn-faster').addEventListener('click', function(){
+  speedIdx = Math.min(speedIdx + 1, SPEEDS.length - 1);
+  $('speed-label').textContent = SPEEDS[speedIdx] + 'x';
+});
+
+$('btn-slower').addEventListener('click', function(){
+  speedIdx = Math.max(speedIdx - 1, 0);
+  $('speed-label').textContent = SPEEDS[speedIdx] + 'x';
+});
+
+$('btn-reset').addEventListener('click', function(){
+  $('ending').classList.remove('show');
+  $('ending').classList.add('hidden');
+  resetSim();
+  $('intro').classList.remove('hidden');
+});
+
+function applyLang(l){
+  lang = l;
+  var btns = document.querySelectorAll('.lang-btn');
+  for (var i = 0; i < btns.length; i++){
+    btns[i].classList.toggle('active', btns[i].dataset.lang === l);
+  }
+  var els = document.querySelectorAll('[data-i18n]');
+  for (var j = 0; j < els.length; j++){
+    var key = els[j].getAttribute('data-i18n');
+    if (I18N[l][key]){
+      if (els[j].tagName === 'INPUT') els[j].placeholder = I18N[l][key];
+      else els[j].innerHTML = I18N[l][key];
+    }
+  }
+  var yy = Math.floor(year);
+  $('year-display').textContent = l === 'ja' ? yy.toLocaleString() + ' 年' : 'Year ' + yy.toLocaleString();
+}
+
+var langBtns = document.querySelectorAll('.lang-btn');
+for (var li = 0; li < langBtns.length; li++){
+  langBtns[li].addEventListener('click', function(){ applyLang(this.dataset.lang); });
+}
+
+resizeCanvas();
+render();
+setInterval(tick, 16);
+
+})();
+</script>
+</body>
+</html>
