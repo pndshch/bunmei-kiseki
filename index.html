@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>文明軌跡 — Civilization Trajectory | Pinda Lab</title>
 <meta property="og:title" content="文明軌跡 — Civilization Trajectory">
-<meta property="og:description" content="人類の文明を1万年シミュレーション。飢餓から退屈まで。">
+<meta property="og:description" content="選択で文明の運命が決まる。破滅か、停滞か、退屈か——それとも調和か。">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#0a1117">
 <style>
@@ -27,31 +27,33 @@ body.era-3 #scene{background:linear-gradient(180deg,#0a1520 0%,#152030 60%,#1a28
 body.era-4 #scene{background:linear-gradient(180deg,#0a0a20 0%,#151530 60%,#1a1a38 100%)}
 body.era-5 #scene{background:linear-gradient(180deg,#08080e 0%,#0e0e18 60%,#141420 100%)}
 
-#dashboard{flex:0 0 auto;background:linear-gradient(180deg,rgba(13,17,23,.95),rgba(10,14,20,.98));border-top:1px solid rgba(255,255,255,.06);padding:8px 14px 12px;display:flex;flex-direction:column;gap:6px;max-height:45vh;overflow-y:auto}
+#dashboard{flex:0 0 auto;background:linear-gradient(180deg,rgba(13,17,23,.95),rgba(10,14,20,.98));border-top:1px solid rgba(255,255,255,.06);padding:8px 14px 12px;display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto}
 #topbar{display:flex;align-items:center;justify-content:space-between;font-size:12px;gap:8px}
 #topbar a{color:#7d8590;text-decoration:none;font-family:system-ui,sans-serif;font-size:11px}
 #era-label{font-weight:700;font-size:15px;letter-spacing:1px;flex:1;text-align:center}
 #year-display{color:#7d8590;font-family:system-ui,sans-serif;font-size:11px;font-variant-numeric:tabular-nums}
 
-#era-dots{display:flex;justify-content:center;gap:8px;padding:4px 0}
+#era-dots{display:flex;justify-content:center;gap:8px;padding:3px 0}
 .era-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.1);transition:all .5s}
 .era-dot.active{box-shadow:0 0 8px rgba(124,58,237,.5)}
 .era-dot.past{background:rgba(124,58,237,.3)}
 .ec0{background:#cc6600}.ec1{background:#88aa33}.ec2{background:#4499aa}.ec3{background:#5577aa}.ec4{background:#8866bb}.ec5{background:#667788}
 
-#stats{display:flex;flex-direction:column;gap:5px}
-.stat-row{display:flex;align-items:center;gap:6px;font-size:11px;height:22px}
-.stat-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0}
-.stat-label{width:30px;flex-shrink:0;font-size:10px;color:#8b949e;font-family:system-ui,sans-serif}
+#stats{display:flex;flex-direction:column;gap:4px}
+.stat-row{display:flex;align-items:center;gap:6px;font-size:11px;height:20px}
+.stat-row.sep{margin-top:3px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06)}
+.stat-icon{font-size:12px;width:18px;text-align:center;flex-shrink:0}
+.stat-label{width:34px;flex-shrink:0;font-size:10px;color:#8b949e;font-family:system-ui,sans-serif}
 .stat-bar{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
-.stat-fill{height:100%;border-radius:3px;transition:width .5s ease;width:0}
+.stat-fill{height:100%;border-radius:3px;transition:width .6s ease;width:0}
 .food-fill{background:linear-gradient(90deg,#cc6600,#daa520)}
 .safety-fill{background:linear-gradient(90deg,#3366aa,#5588cc)}
 .conv-fill{background:linear-gradient(90deg,#338888,#44aaaa)}
 .comfort-fill{background:linear-gradient(90deg,#7744aa,#9966cc)}
 .meaning-fill{background:linear-gradient(90deg,#e8a030,#ffcc44)}
+.crisis-fill{background:linear-gradient(90deg,#a23b32,#d9685f)}
 .boredom-fill{background:linear-gradient(90deg,#555566,#777788)}
-.stat-val{width:32px;text-align:right;font-family:system-ui,sans-serif;font-size:10px;color:#7d8590;font-variant-numeric:tabular-nums}
+.stat-val{width:34px;text-align:right;font-family:system-ui,sans-serif;font-size:10px;color:#7d8590;font-variant-numeric:tabular-nums}
 
 #bottom-row{display:flex;align-items:center;justify-content:space-between;padding:2px 0}
 #pop-display{font-size:12px;color:#8b949e;font-family:system-ui,sans-serif;font-variant-numeric:tabular-nums}
@@ -60,38 +62,77 @@ body.era-5 #scene{background:linear-gradient(180deg,#08080e 0%,#0e0e18 60%,#1414
 #controls button:hover{background:rgba(255,255,255,.15)}
 #controls button:active{transform:scale(.95)}
 #speed-label{font-size:11px;color:#8b949e;font-family:system-ui,sans-serif;min-width:24px;text-align:center}
-#era-desc{font-size:12px;color:#7d8590;line-height:1.5;min-height:36px}
+#era-desc{font-size:12px;color:#7d8590;line-height:1.5;min-height:34px}
 
 .overlay{position:fixed;inset:0;background:rgba(5,8,12,.92);display:flex;align-items:center;justify-content:center;z-index:100;opacity:1;transition:opacity .8s ease}
 .overlay.hidden{opacity:0;pointer-events:none}
-.overlay-inner{text-align:center;padding:24px;max-width:380px}
-.overlay-inner h1{font-size:32px;font-weight:700;letter-spacing:2px;margin-bottom:12px}
+.overlay-inner{text-align:center;padding:24px;max-width:390px}
+.overlay-inner h1{font-size:31px;font-weight:700;letter-spacing:2px;margin-bottom:12px;line-height:1.3}
 #intro h1{background:linear-gradient(135deg,#e8a030,#ffcc44,#e8a030);-webkit-background-clip:text;background-clip:text;color:transparent}
-#ending h1{color:#c0c8d0}
 .intro-sub{font-size:14px;color:#8b949e;margin-bottom:16px;font-family:system-ui,sans-serif;letter-spacing:1px}
-.intro-desc{font-size:13px;color:#7d8590;line-height:1.7;margin-bottom:24px}
-.overlay-btn{background:linear-gradient(135deg,#238636,#2ea043);border:none;color:#fff;font:600 14px/1 system-ui,sans-serif;padding:12px 28px;border-radius:10px;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.intro-desc{font-size:13px;color:#7d8590;line-height:1.8;margin-bottom:20px}
+.overlay-btn{background:linear-gradient(135deg,#238636,#2ea043);border:none;color:#fff;font:600 14px/1 system-ui,sans-serif;padding:13px 30px;border-radius:10px;cursor:pointer;transition:all .2s;letter-spacing:.5px}
 .overlay-btn:hover{filter:brightness(1.15);transform:translateY(-1px)}
-.end-sub{font-size:16px;color:#8b949e;margin-bottom:20px;line-height:1.6}
-.end-reflect{font-size:12px;color:#6d7680;line-height:1.8;margin-bottom:20px}
-.end-btn{background:linear-gradient(135deg,#333,#444)}
+.overlay-btn:active{transform:scale(.97)}
+.end-btn{background:linear-gradient(135deg,#3a3a44,#4a4a55)}
 
-#final-stats{margin:16px auto;max-width:260px}
-.fs-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;font-family:system-ui,sans-serif}
-.fs-label{width:40px;text-align:right;color:#8b949e}
-.fs-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
-.fs-fill{height:100%;border-radius:3px;transition:width 1.5s ease}
-.fs-val{width:32px;text-align:right;color:#7d8590;font-size:10px}
+/* choice overlay */
+#choice{position:fixed;inset:0;background:linear-gradient(180deg,rgba(7,9,14,.8) 0%,rgba(7,9,14,.87) 48%,rgba(6,8,12,1) 82%);display:flex;align-items:center;justify-content:center;z-index:150;padding:16px;opacity:0;pointer-events:none;transition:opacity .35s ease}
+#choice.show{opacity:1;pointer-events:auto}
+.choice-card{width:min(94vw,420px);max-height:90vh;overflow-y:auto;background:linear-gradient(180deg,rgba(21,25,33,.99),rgba(13,16,22,.99));border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;box-shadow:0 24px 64px rgba(0,0,0,.65);transform:translateY(20px) scale(.97);transition:transform .4s cubic-bezier(.2,.85,.25,1)}
+#choice.show .choice-card{transform:translateY(0) scale(1)}
+.choice-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;font-family:system-ui,sans-serif;font-size:11px}
+.choice-era{font-weight:700;letter-spacing:1.5px}
+.choice-num{color:#6d7680;font-variant-numeric:tabular-nums}
+.choice-title{font-size:21px;font-weight:700;line-height:1.4;margin-bottom:9px;letter-spacing:.5px}
+.choice-situation{font-size:13.5px;color:#9aa4b0;line-height:1.75;margin-bottom:17px}
+.choice-opts{display:flex;flex-direction:column;gap:9px}
+.opt-btn{width:100%;text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:11px;padding:12px 13px;cursor:pointer;transition:background .15s,border-color .15s,transform .1s;display:flex;flex-direction:column;gap:8px;font-family:inherit}
+.opt-btn:hover{background:rgba(124,58,237,.14);border-color:rgba(124,58,237,.55)}
+.opt-btn:active{transform:scale(.99)}
+.opt-label{font-size:14px;color:#e6edf3;line-height:1.55}
+.opt-hints{display:flex;flex-wrap:wrap;gap:5px}
+.hint{font-family:system-ui,sans-serif;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:.3px;white-space:nowrap}
+.hint-good{background:rgba(63,160,110,.16);color:#5cc492}
+.hint-bad{background:rgba(200,80,72,.18);color:#e27d72}
 
-#ending .overlay-inner>*{opacity:0;transform:translateY(8px);transition:opacity 1s ease,transform 1s ease}
+/* endings */
+#ending .overlay-inner>*{opacity:0;transform:translateY(8px);transition:opacity .9s ease,transform .9s ease}
 #ending.show .overlay-inner>*{opacity:1;transform:translateY(0)}
 #ending.show .overlay-inner>*:nth-child(1){transition-delay:0s}
-#ending.show .overlay-inner>*:nth-child(2){transition-delay:.8s}
-#ending.show .overlay-inner>*:nth-child(3){transition-delay:1.6s}
-#ending.show .overlay-inner>*:nth-child(4){transition-delay:2.4s}
-#ending.show .overlay-inner>*:nth-child(5){transition-delay:3.2s}
+#ending.show .overlay-inner>*:nth-child(2){transition-delay:.3s}
+#ending.show .overlay-inner>*:nth-child(3){transition-delay:.6s}
+#ending.show .overlay-inner>*:nth-child(4){transition-delay:.9s}
+#ending.show .overlay-inner>*:nth-child(5){transition-delay:1.2s}
+#ending.show .overlay-inner>*:nth-child(6){transition-delay:1.5s}
+#ending.show .overlay-inner>*:nth-child(7){transition-delay:1.8s}
+.end-badge{display:inline-block;font-family:system-ui,sans-serif;font-size:11px;font-weight:700;letter-spacing:4px;padding:5px 14px;border-radius:20px}
+.end-sub{font-size:15px;color:#8b949e;margin-bottom:14px;line-height:1.6}
+.end-reflect{font-size:12px;color:#828c98;line-height:1.95;margin-bottom:12px}
+.end-tracker{font-family:system-ui,sans-serif;font-size:11px;color:#6d7680;margin-bottom:18px}
+.end-tracker .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 2px;background:rgba(255,255,255,.13);vertical-align:middle}
+.end-tracker .dot.found{background:#7c3aed}
+#ending.ending-ruin{background:radial-gradient(ellipse at 50% 38%,#2e1410,#070406)}
+#ending.ending-ruin h1{color:#e0726a}
+#ending.ending-ruin .end-badge{background:rgba(200,70,60,.2);color:#e0726a;border:1px solid rgba(224,114,106,.4)}
+#ending.ending-stagnation{background:radial-gradient(ellipse at 50% 38%,#241f16,#080807)}
+#ending.ending-stagnation h1{color:#bcab8e}
+#ending.ending-stagnation .end-badge{background:rgba(150,130,95,.18);color:#bcab8e;border:1px solid rgba(188,171,142,.38)}
+#ending.ending-boredom{background:radial-gradient(ellipse at 50% 38%,#161a22,#07080a)}
+#ending.ending-boredom h1{color:#9aa4b2}
+#ending.ending-boredom .end-badge{background:rgba(120,132,150,.16);color:#9aa4b2;border:1px solid rgba(154,164,178,.34)}
+#ending.ending-harmony{background:radial-gradient(ellipse at 50% 38%,#161c12,#070907)}
+#ending.ending-harmony h1{background:linear-gradient(135deg,#e8a030,#ffd56b,#8fcf9a);-webkit-background-clip:text;background-clip:text;color:transparent}
+#ending.ending-harmony .end-badge{background:rgba(140,160,90,.18);color:#c3d68f;border:1px solid rgba(195,214,143,.4)}
 
-@media(max-height:600px){
+#final-stats{margin:14px auto;max-width:270px}
+.fs-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;font-family:system-ui,sans-serif}
+.fs-label{width:46px;text-align:right;color:#8b949e}
+.fs-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.fs-fill{height:100%;border-radius:3px;transition:width 1.4s ease}
+.fs-val{width:32px;text-align:right;color:#7d8590;font-size:10px;font-variant-numeric:tabular-nums}
+
+@media(max-height:640px){
 #dashboard{gap:4px;padding:6px 12px 8px}
 .stat-row{height:18px}
 #era-desc{display:none}
@@ -131,7 +172,8 @@ body{max-width:480px;margin:0 auto;border-left:1px solid rgba(255,255,255,.04);b
 <div class="stat-row"><span class="stat-icon">🛡️</span><span class="stat-label" data-i18n="sSafety">安全</span><div class="stat-bar"><div class="stat-fill safety-fill" id="bar-safety"></div></div><span class="stat-val" id="val-safety">0%</span></div>
 <div class="stat-row"><span class="stat-icon">⚙️</span><span class="stat-label" data-i18n="sConv">便利</span><div class="stat-bar"><div class="stat-fill conv-fill" id="bar-conv"></div></div><span class="stat-val" id="val-conv">0%</span></div>
 <div class="stat-row"><span class="stat-icon">✨</span><span class="stat-label" data-i18n="sComfort">快適</span><div class="stat-bar"><div class="stat-fill comfort-fill" id="bar-comfort"></div></div><span class="stat-val" id="val-comfort">0%</span></div>
-<div class="stat-row"><span class="stat-icon">💡</span><span class="stat-label" data-i18n="sMeaning">意味</span><div class="stat-bar"><div class="stat-fill meaning-fill" id="bar-meaning"></div></div><span class="stat-val" id="val-meaning">85%</span></div>
+<div class="stat-row sep"><span class="stat-icon">💡</span><span class="stat-label" data-i18n="sMeaning">意味</span><div class="stat-bar"><div class="stat-fill meaning-fill" id="bar-meaning"></div></div><span class="stat-val" id="val-meaning">75%</span></div>
+<div class="stat-row"><span class="stat-icon">⚠️</span><span class="stat-label" data-i18n="sCrisis">危機</span><div class="stat-bar"><div class="stat-fill crisis-fill" id="bar-crisis"></div></div><span class="stat-val" id="val-crisis">6%</span></div>
 <div class="stat-row"><span class="stat-icon">😶</span><span class="stat-label" data-i18n="sBoredom">退屈</span><div class="stat-bar"><div class="stat-fill boredom-fill" id="bar-boredom"></div></div><span class="stat-val" id="val-boredom">0%</span></div>
 </div>
 <div id="bottom-row">
@@ -145,7 +187,7 @@ body{max-width:480px;margin:0 auto;border-left:1px solid rgba(255,255,255,.04);b
 </div>
 </div>
 <div id="era-desc">
-<p id="era-text" data-i18n="desc0">食べ物を探し、火を守り、明日を生き延びることだけが全て。</p>
+<p id="era-text" data-i18n="desc0">食べ物を探し、火を守り、明日を生き延びる。それが全て。</p>
 </div>
 </div>
 
@@ -153,28 +195,31 @@ body{max-width:480px;margin:0 auto;border-left:1px solid rgba(255,255,255,.04);b
 <div class="overlay-inner">
 <h1 data-i18n="introTitle">文明軌跡</h1>
 <p class="intro-sub" data-i18n="introSub">Civilization Trajectory</p>
-<p class="intro-desc" data-i18n="introDesc">人類の文明を1万年シミュレーション。<br>飢餓から退屈まで——すべてが満たされた先に何が待つ?</p>
-<button class="overlay-btn" id="btn-start" data-i18n="introStart">▶ シミュレーションを開始</button>
+<p class="intro-desc" data-i18n="introDesc">あなたの選択が、人類一万年の行方を決める。<br>飢えを克服し、便利を、安全を、快適を——<br>そのすべてを手にしたとき、何が待つ?</p>
+<p class="end-tracker" id="intro-tracker" style="display:none"></p>
+<button class="overlay-btn" id="btn-start" data-i18n="introStart">▶ 文明を始める</button>
 </div>
 </div>
 
-<div class="overlay hidden" id="ending">
-<div class="overlay-inner">
-<h1 data-i18n="endTitle">全てが満たされた。</h1>
-<p class="end-sub" data-i18n="endSub">なのに、何かが足りない。</p>
-<div id="final-stats"></div>
-<p class="end-reflect" data-i18n="endReflect">飢えは消えた。危険も消えた。不便も消えた。<br>それでも人は問い続ける——「なぜ生きているのか？」<br><br>皮肉にも、すべてを手に入れた先に、<br>もっとも原始的な問いが待っていた。</p>
-<button class="overlay-btn end-btn" id="btn-restart" data-i18n="endRestart">↻ もう一度</button>
-</div>
-</div>
+<div id="choice"><div class="choice-card" id="choice-card"></div></div>
+
+<div class="overlay hidden" id="ending"><div class="overlay-inner" id="ending-inner"></div></div>
 
 <script>
 (function(){
 'use strict';
 
-var YEAR_PER_SEC = 50;
+var YEAR_PER_SEC = 46;
 var SPEEDS = [0.5, 1, 2, 4];
-var ERA_TH = [0, 1600, 3200, 5000, 7000, 8500];
+var END_YEAR = 10000;
+var DRIFT_MAT = 0.0007;
+var DRIFT_MEAN = 0.005;
+var DRIFT_CRIS_UP = 0.002;
+var DRIFT_CRIS_DN = 0.0005;
+var RUIN_CRISIS_FINAL = 62;
+var STAGNATION_MAT = 45;
+var HARMONY_MEANING = 52;
+
 var ERA_PCOL = ['#e88633','#7aaa33','#3399aa','#5580aa','#8866bb','#667788'];
 var ERA_GROUND = ['#4a2c17','#2d4a1c','#3a4a4a','#2a3040','#252535','#1a1a20'];
 var ERA_BLDG = ['#5a3a25','#3a4a2a','#3a4a4a','#2a3040','#2a2a45','#1c1c28'];
@@ -188,44 +233,156 @@ var ERA_THOUGHTS = [
 ];
 var CLUSTERS = [[.15,.6],[.38,.65],[.62,.55],[.85,.6]];
 
+var EVENTS = [
+  {
+    year: 600,
+    title: {ja:'最初の冬', en:'The First Winter'},
+    situation: {ja:'厳しい冬が来る。蓄えはわずかしかない。群れをどう導く?', en:'A harsh winter approaches. The stores are nearly empty. How do you lead the tribe?'},
+    options: [
+      {label:{ja:'危険を承知で、大物狩りに賭ける', en:'Risk it all on a great hunt'}, fx:{food:24, crisis:8, meaning:-3}},
+      {label:{ja:'火を囲み、物語と踊りで群れを結束させる', en:'Gather at the fire — bind the tribe with stories and dance'}, fx:{food:6, meaning:10}},
+      {label:{ja:'木の実と種を蒔き、少しずつ蓄える', en:'Sow nuts and seeds, build a slow store'}, fx:{food:13, convenience:7, meaning:-1}}
+    ]
+  },
+  {
+    year: 1800,
+    title: {ja:'定住か、放浪か', en:'To Settle, or to Wander'},
+    situation: {ja:'川辺に肥沃な土地を見つけた。腰を据えるか、移動を続けるか。', en:'You find fertile land by a river. Put down roots, or keep moving?'},
+    options: [
+      {label:{ja:'村を築き、農耕に本格的に専念する', en:'Build a village, commit fully to farming'}, fx:{food:16, convenience:14, safety:8, crisis:4, meaning:-11}},
+      {label:{ja:'季節とともに、移動の暮らしを続ける', en:'Keep the migrating life, moving with the seasons'}, fx:{food:7, safety:-2, meaning:12}},
+      {label:{ja:'畑を持ちつつ、季節の旅も残す', en:'Keep fields, but also keep the seasonal journeys'}, fx:{food:9, convenience:8, meaning:-3}}
+    ]
+  },
+  {
+    year: 3000,
+    title: {ja:'道具と分業', en:'Tools and the Division of Labor'},
+    situation: {ja:'金属の道具が生まれた。専門職を設ければ、皆の暮らしは楽になる。', en:'Metal tools have appeared. Specialized trades would make everyone’s life easier.'},
+    options: [
+      {label:{ja:'徹底的に分業し、技術を一気に加速させる', en:'Divide labor sharply, accelerate technology hard'}, fx:{convenience:24, comfort:6, crisis:9, meaning:-13}},
+      {label:{ja:'専門化を拒み、皆が全てをこなす暮らしを守る', en:'Refuse specialization — everyone keeps doing everything'}, fx:{convenience:6, safety:4, meaning:12}},
+      {label:{ja:'ほどほどに分業し、着実に効率を上げる', en:'Divide labor modestly, raise efficiency steadily'}, fx:{convenience:16, comfort:5, crisis:3, meaning:-3}}
+    ]
+  },
+  {
+    year: 4200,
+    title: {ja:'都市の形', en:'The Shape of the City'},
+    situation: {ja:'人口が膨れ上がった。都市をどう形づくる?', en:'The population has swelled. How do you shape the city?'},
+    options: [
+      {label:{ja:'巨大都市を一気に築き上げる', en:'Raise a vast megacity all at once'}, fx:{convenience:18, comfort:14, crisis:16, meaning:-9}},
+      {label:{ja:'人の顔が見える小さな町を、各地に散らす', en:'Scatter small towns where every face is known'}, fx:{safety:9, meaning:12}},
+      {label:{ja:'整然とした計画都市を築く', en:'Build one orderly, well-planned city'}, fx:{safety:9, convenience:9, comfort:5, crisis:4, meaning:-3}}
+    ]
+  },
+  {
+    year: 5400,
+    title: {ja:'死を遠ざける', en:'Holding Death at Bay'},
+    situation: {ja:'病をほぼ克服できる医療。どこまで死を遠ざける?', en:'Medicine can defeat nearly all disease. How far do you push death away?'},
+    options: [
+      {label:{ja:'あらゆる手段で、死を限界まで遠ざける', en:'By every means, push death as far away as it will go'}, fx:{safety:24, comfort:10, crisis:11, meaning:-15}},
+      {label:{ja:'ほどほどの医療で、自然な死を受け入れる', en:'Modest medicine — accept a natural death'}, fx:{safety:10, meaning:12}},
+      {label:{ja:'公衆衛生を整え、社会全体の寿命を延ばす', en:'Build public health, extend lifespans society-wide'}, fx:{safety:17, crisis:-10, meaning:-2}}
+    ]
+  },
+  {
+    year: 6600,
+    title: {ja:'エネルギーと大地', en:'Energy and the Earth'},
+    situation: {ja:'無限のエネルギーが手に入る。だが大地と空が汚れていく。', en:'Limitless energy is within reach. But the land and sky grow foul.'},
+    options: [
+      {label:{ja:'成長を最優先する。環境は後回しでいい', en:'Growth first — the environment can wait'}, fx:{convenience:17, comfort:21, crisis:28, meaning:-6}},
+      {label:{ja:'成長を抑え、大地と共にある道を選ぶ', en:'Curb growth, choose a path that lives with the land'}, fx:{convenience:6, comfort:6, crisis:-14, meaning:9}},
+      {label:{ja:'技術の力で、汚染を打ち消そうと試みる', en:'Use technology itself to undo the pollution'}, fx:{convenience:13, comfort:12, crisis:-4, meaning:-3}}
+    ]
+  },
+  {
+    year: 7800,
+    title: {ja:'労働の終わり', en:'The End of Labor'},
+    situation: {ja:'機械が全ての労働を担える。人間は、何をして生きる?', en:'Machines can do all the labor. What, then, will humans live for?'},
+    options: [
+      {label:{ja:'全てを自動化し、完全な余暇を手に入れる', en:'Automate everything — claim a life of pure leisure'}, fx:{comfort:26, convenience:12, crisis:6, meaning:-19}},
+      {label:{ja:'あえて手仕事と挑戦を、暮らしに残す', en:'Deliberately keep handcraft and challenge in daily life'}, fx:{comfort:7, meaning:14}},
+      {label:{ja:'効率を高め、余った時間は娯楽に充てる', en:'Maximize efficiency, fill the freed time with entertainment'}, fx:{comfort:16, convenience:6, meaning:-4}}
+    ]
+  },
+  {
+    year: 9000,
+    title: {ja:'最後の問い', en:'The Last Question'},
+    situation: {ja:'全てが揃った。人々は問い始める——「なぜ生きるのか」。', en:'Everything is in place. People begin to ask — “Why do we live?”'},
+    options: [
+      {label:{ja:'心地よい仮想世界へ、静かに逃避する', en:'Retreat, quietly, into a pleasant virtual world'}, fx:{comfort:14, crisis:8, meaning:-22}},
+      {label:{ja:'暮らし、絆、芸術——足元にある意味を見つめ直す', en:'Look again at the meaning underfoot — life, bonds, art'}, fx:{comfort:4, crisis:-5, meaning:18}},
+      {label:{ja:'宇宙へ、未知のフロンティアへ漕ぎ出す', en:'Set sail for space — for the unknown frontier'}, fx:{convenience:8, comfort:6, crisis:6, meaning:6}}
+    ]
+  }
+];
+
+var ENDINGS = {
+  ruin: {
+    cls:'ending-ruin',
+    name:{ja:'破滅', en:'RUIN'},
+    title:{ja:'文明は、自らの手で滅びた。', en:'Civilization fell by its own hand.'},
+    sub:{ja:'豊かさを求めた果てに、足元が崩れ落ちた。', en:'Chasing abundance, the ground gave way beneath it.'},
+    reflect:{ja:'便利さも、快適さも、すべては地と空の上に築かれていた。<br>その土台を顧みなかったとき、何もかもが瓦礫に変わった。<br><br>進歩は速かった。だが、速すぎた。', en:'Every convenience, every comfort, stood upon land and sky.<br>The moment that foundation was ignored, all of it turned to rubble.<br><br>Progress was fast. But far too fast.'}
+  },
+  stagnation: {
+    cls:'ending-stagnation',
+    name:{ja:'停滞', en:'STAGNATION'},
+    title:{ja:'文明は、ついに花開かなかった。', en:'Civilization never came into bloom.'},
+    sub:{ja:'一万年。人々は、ただ生き延びた。', en:'Ten thousand years. The people merely survived.'},
+    reflect:{ja:'そびえる塔も、まばゆい街も、ここにはない。<br>飢えはいつも、すぐ隣にあった。<br><br>それでも人々は、星を見上げる夜だけは持っていた。<br>——豊かさを、ついぞ知らないままに。', en:'No towering spires. No dazzling cities.<br>Hunger was always just one step away.<br><br>And yet the people kept their nights of gazing at the stars.<br>— Never having known abundance at all.'}
+  },
+  boredom: {
+    cls:'ending-boredom',
+    name:{ja:'退屈', en:'BOREDOM'},
+    title:{ja:'全てが満たされた。なのに——', en:'Everything was fulfilled. And yet —'},
+    sub:{ja:'何かが、決定的に足りない。', en:'Something, decisively, is missing.'},
+    reflect:{ja:'飢えは消えた。危険も、不便も消えた。<br>それでも人は問い続ける——「なぜ生きているのか」。<br><br>皮肉にも、すべてを手に入れた先に、<br>もっとも原始的な問いが待っていた。', en:'Hunger vanished. Danger, inconvenience — all gone.<br>Yet people keep asking: “Why are we alive?”<br><br>Ironically, at the end of having everything,<br>the most primitive question was waiting.'}
+  },
+  harmony: {
+    cls:'ending-harmony',
+    name:{ja:'調和', en:'HARMONY'},
+    title:{ja:'豊かさと、意味と。', en:'Abundance, and meaning.'},
+    sub:{ja:'人は、その両方を選びとった。', en:'Humanity chose to hold them both.'},
+    reflect:{ja:'飢えを克服しても、祭りを忘れなかった。<br>便利を手にしても、物語を語り続けた。<br><br>満たされた手のひらの上で、人はまだ問うことをやめない。<br>——それでいい。それこそが、生きるということだ。', en:'Hunger was conquered, yet the festivals were never forgotten.<br>Convenience was won, yet the stories were still told.<br><br>Upon a palm that holds everything, humanity still keeps asking.<br>— And that is enough. That is what it means to live.'}
+  }
+};
+
 var I18N = {
   ja: {
     back:'← Pinda Lab',
     era0:'飢餓',era1:'実り',era2:'便利',era3:'安全',era4:'快適',era5:'退屈',
-    desc0:'食べ物を探し、火を守り、明日を生き延びることだけが全て。',
-    desc1:'農耕が始まり、食料の余剰が生まれた。人々は集まり、村を作る。',
-    desc2:'道具、車輪、文字——人間は世界を便利にする方法を見つけた。',
-    desc3:'医療、城壁、法律——死ぬことが難しくなった。',
-    desc4:'技術と余暇。生活はかつてないほど快適に。しかし……',
-    desc5:'全てが揃った。なのに、心は空っぽだ。',
-    sFood:'食',sSafety:'安全',sConv:'便利',sComfort:'快適',sMeaning:'意味',sBoredom:'退屈',
+    desc0:'食べ物を探し、火を守り、明日を生き延びる。それが全て。',
+    desc1:'農耕が芽吹いた。食料の余剰が、人々を一つの場所に集める。',
+    desc2:'道具、車輪、文字。世界は急速に便利になっていく。',
+    desc3:'医療、法、城壁。死は遠のき、暮らしは安定する。',
+    desc4:'技術と余暇。生活はかつてなく快適だ。——だが、心は?',
+    desc5:'全てが揃った。なのに、人々の目は虚ろだ。',
+    sFood:'食',sSafety:'安全',sConv:'便利',sComfort:'快適',sMeaning:'意味',sCrisis:'危機',sBoredom:'退屈',
     introTitle:'文明軌跡',
     introSub:'Civilization Trajectory',
-    introDesc:'人類の文明を1万年シミュレーション。<br>飢餓から退屈まで——すべてが満たされた先に何が待つ?',
-    introStart:'▶ シミュレーションを開始',
-    endTitle:'全てが満たされた。',
-    endSub:'なのに、何かが足りない。',
-    endReflect:'飢えは消えた。危険も消えた。不便も消えた。<br>それでも人は問い続ける——「なぜ生きているのか？」<br><br>皮肉にも、すべてを手に入れた先に、<br>もっとも原始的な問いが待っていた。',
-    endRestart:'↻ もう一度'
+    introDesc:'あなたの選択が、人類一万年の行方を決める。<br>飢えを克服し、便利を、安全を、快適を——<br>そのすべてを手にしたとき、何が待つ?',
+    introStart:'▶ 文明を始める',
+    crossroad:'岐路',
+    endRestart:'↻ もう一度',
+    endTracker:'発見した結末'
   },
   en: {
     back:'← Pinda Lab',
     era0:'Hunger',era1:'Harvest',era2:'Convenience',era3:'Safety',era4:'Comfort',era5:'Boredom',
     desc0:'Find food. Guard the fire. Survive until tomorrow. That is everything.',
-    desc1:'Agriculture begins. Food surplus appears. People gather and build villages.',
-    desc2:'Tools, wheels, writing — humans reshape the world for convenience.',
-    desc3:'Medicine, walls, laws — dying becomes difficult.',
-    desc4:'Technology and leisure. Life has never been more comfortable. And yet...',
-    desc5:'Everything is in place. Yet the heart is empty.',
-    sFood:'Food',sSafety:'Safety',sConv:'Conv.',sComfort:'Comf.',sMeaning:'Mean.',sBoredom:'Bore.',
+    desc1:'Agriculture sprouts. A surplus of food draws people to one place.',
+    desc2:'Tools, wheels, writing. The world grows convenient, fast.',
+    desc3:'Medicine, law, walls. Death recedes; life grows stable.',
+    desc4:'Technology and leisure. Life has never been so comfortable. But the heart?',
+    desc5:'Everything is in place. Yet the people’s eyes are hollow.',
+    sFood:'Food',sSafety:'Safety',sConv:'Conv.',sComfort:'Comf.',sMeaning:'Mean.',sCrisis:'Crisis',sBoredom:'Bore.',
     introTitle:'Civilization<br>Trajectory',
     introSub:'文明軌跡',
-    introDesc:'A 10,000-year simulation of human civilization.<br>From hunger to boredom — what awaits when every need is met?',
-    introStart:'▶ Begin Simulation',
-    endTitle:'Everything is fulfilled.',
-    endSub:'And yet, something is missing.',
-    endReflect:'Hunger vanished. Danger vanished. Inconvenience vanished.<br>Yet humans keep asking: "Why am I alive?"<br><br>Ironically, at the end of having everything,<br>the most primitive question awaited.',
-    endRestart:'↻ Once More'
+    introDesc:'Your choices decide the fate of 10,000 years of humankind.<br>Conquer hunger, win convenience, safety, comfort —<br>and when all of it is yours, what awaits?',
+    introStart:'▶ Begin Civilization',
+    crossroad:'Crossroads',
+    endRestart:'↻ Once More',
+    endTracker:'Endings discovered'
   }
 };
 
@@ -239,47 +396,68 @@ var lang = 'ja';
 var year = 0;
 var era = 0;
 var speedIdx = 1;
-var paused = true;
-var ended = false;
+var phase = 'intro';
+var nextEvent = 0;
+var currentEvent = 0;
+var endingType = null;
+var ruinTimer = 0;
 var particles = [];
 var lastTick = 0;
+var boredom = 0;
+var stats;
+
+function freshStats(){ return {food:12, safety:8, convenience:5, comfort:3, meaning:75, crisis:6}; }
+stats = freshStats();
 
 var buildings = [];
 (function(){
-  for (var i = 0; i < 35; i++) {
+  for (var i = 0; i < 36; i++) {
     buildings.push({
-      x: (i + .2 + Math.random() * .6) / 35,
+      x: (i + .2 + Math.random() * .6) / 36,
       w: .006 + Math.random() * .016,
-      maxH: .02 + Math.pow(Math.random(), 1.5) * .35,
-      startYear: 1200 + Math.random() * 5500
+      maxH: .02 + Math.pow(Math.random(), 1.5) * .36,
+      thr: Math.pow(Math.random(), 1.25) * .82
     });
   }
   buildings.sort(function(a,b){ return a.x - b.x; });
 })();
 
-function sigmoid(x){ return 1 / (1 + Math.exp(-x)); }
 function clamp(v, lo, hi){ return v < lo ? lo : v > hi ? hi : v; }
+function matAvg(){ return (stats.food + stats.safety + stats.convenience + stats.comfort) / 4; }
 
-function getEra(y){
-  for (var i = ERA_TH.length - 1; i >= 0; i--){
-    if (y >= ERA_TH[i]) return i;
-  }
+function applyDrift(s, dy){
+  var ma = (s.food + s.safety + s.convenience + s.comfort) / 4;
+  s.food = clamp(s.food + dy * DRIFT_MAT * (1 - s.food / 100), 0, 100);
+  s.safety = clamp(s.safety + dy * DRIFT_MAT * (1 - s.safety / 100), 0, 100);
+  s.convenience = clamp(s.convenience + dy * DRIFT_MAT * (1 - s.convenience / 100), 0, 100);
+  s.comfort = clamp(s.comfort + dy * DRIFT_MAT * (1 - s.comfort / 100), 0, 100);
+  s.meaning = clamp(s.meaning - dy * DRIFT_MEAN * (ma / 100), 0, 100);
+  s.crisis = clamp(s.crisis + dy * DRIFT_CRIS_UP * (s.convenience / 100) - dy * DRIFT_CRIS_DN, 0, 100);
+}
+
+function computeBoredom(){
+  return clamp(matAvg() * (1 - stats.meaning / 100) * 1.15, 0, 100);
+}
+
+function deriveEra(){
+  var m = matAvg();
+  if (boredom > 52 && m > 62) return 5;
+  if (m > 76) return 4;
+  if (m > 56) return 3;
+  if (m > 37) return 2;
+  if (m > 19) return 1;
   return 0;
 }
 
-function computeStats(y){
-  return {
-    food: sigmoid((y - 800) / 800),
-    safety: sigmoid((y - 5000) / 1500),
-    convenience: sigmoid((y - 3500) / 1200),
-    comfort: sigmoid((y - 7000) / 800),
-    meaning: 1 - sigmoid((y - 4500) / 1800),
-    boredom: sigmoid((y - 8000) / 600)
-  };
+function targetPop(){
+  return Math.floor(18 + stats.food / 100 * 175 + stats.safety / 100 * 115 + stats.comfort / 100 * 85);
 }
 
-function targetPop(s){
-  return Math.floor(25 + s.food * 200 + s.safety * 150 + s.comfort * 125);
+function evaluateEnding(){
+  if (stats.crisis >= RUIN_CRISIS_FINAL) return 'ruin';
+  if (matAvg() < STAGNATION_MAT) return 'stagnation';
+  if (stats.meaning >= HARMONY_MEANING) return 'harmony';
+  return 'boredom';
 }
 
 var W = 0, H = 0, dpr = 1;
@@ -312,7 +490,6 @@ function spawnParticle(){
 function updateParticle(p, e){
   p.age++;
   p.tTimer--;
-
   if (p.tTimer <= 0){
     var pool = ERA_THOUGHTS[e];
     p.thought = Math.random() < .22 ? pool[Math.floor(Math.random() * pool.length)] : null;
@@ -370,8 +547,7 @@ function updateParticle(p, e){
         p.vx += (Math.random() - .5) * .002;
         p.vy += (Math.random() - .5) * .002;
       }
-      var bp = clamp((year - 8500) / 1500, 0, 1);
-      p.opacity = Math.max(.15, .8 - bp * .55);
+      p.opacity = clamp(.82 - boredom / 100 * .58, .18, .82);
       break;
   }
 
@@ -393,18 +569,20 @@ function updateParticle(p, e){
 function render(){
   ctx.clearRect(0, 0, W, H);
   if (W === 0) return;
-  var e = getEra(year);
+  var e = era < 0 ? 0 : era;
   var groundH = H * .08;
 
   ctx.fillStyle = ERA_GROUND[e];
   ctx.fillRect(0, H - groundH, W, groundH);
 
+  var cityLevel = (stats.convenience + stats.comfort) / 200;
   var bc = ERA_BLDG[e];
   for (var bi = 0; bi < buildings.length; bi++){
     var b = buildings[bi];
-    var prog = clamp((year - b.startYear) / 2500, 0, 1);
-    if (prog <= 0) continue;
+    if (cityLevel <= b.thr) continue;
+    var prog = clamp((cityLevel - b.thr) / .42, 0, 1);
     var bh = b.maxH * prog * H;
+    if (bh < 1) continue;
     var bx = b.x * W;
     var bw = Math.max(b.w * W, 2);
     ctx.fillStyle = bc;
@@ -420,9 +598,9 @@ function render(){
     }
   }
 
-  if (e === 5){
-    var bp5 = clamp((year - 8500) / 1500, 0, 1);
-    ctx.fillStyle = 'rgba(10,10,15,' + (bp5 * .3).toFixed(2) + ')';
+  if (boredom > 55){
+    var bp5 = clamp((boredom - 55) / 40, 0, 1);
+    ctx.fillStyle = 'rgba(10,10,15,' + (bp5 * .32).toFixed(2) + ')';
     ctx.fillRect(0, 0, W, H);
   }
 
@@ -431,18 +609,15 @@ function render(){
     var p = particles[pi];
     var px = p.x * W;
     var py = p.y * H;
-
     ctx.globalAlpha = p.opacity * .2;
     ctx.fillStyle = pc;
     ctx.beginPath();
     ctx.arc(px, py, p.size * 3, 0, 6.2832);
     ctx.fill();
-
     ctx.globalAlpha = p.opacity * .85;
     ctx.beginPath();
     ctx.arc(px, py, p.size, 0, 6.2832);
     ctx.fill();
-
     if (p.thought && p.thought !== ''){
       ctx.globalAlpha = p.opacity * .65;
       ctx.font = '11px system-ui,sans-serif';
@@ -453,10 +628,10 @@ function render(){
   }
   ctx.globalAlpha = 1;
 
-  if (year > 9200){
-    var qp = clamp((year - 9200) / 600, 0, 1);
+  if (boredom > 58){
+    var qp = clamp((boredom - 58) / 34, 0, 1);
     var qs = 40 + qp * 80;
-    ctx.globalAlpha = qp * .12;
+    ctx.globalAlpha = qp * .13;
     ctx.font = qs + 'px serif';
     ctx.fillStyle = '#8888aa';
     ctx.textAlign = 'center';
@@ -466,142 +641,282 @@ function render(){
   }
 }
 
-function updateUI(stats, e){
-  var bars = [
-    ['food', stats.food], ['safety', stats.safety],
-    ['conv', stats.convenience], ['comfort', stats.comfort],
-    ['meaning', stats.meaning], ['boredom', stats.boredom]
-  ];
-  for (var i = 0; i < bars.length; i++){
-    var pct = Math.round(bars[i][1] * 100);
-    $('bar-' + bars[i][0]).style.width = pct + '%';
-    $('val-' + bars[i][0]).textContent = pct + '%';
+function setBar(id, v){
+  var p = Math.round(clamp(v, 0, 100));
+  $('bar-' + id).style.width = p + '%';
+  $('val-' + id).textContent = p + '%';
+}
+
+function applyEra(e){
+  document.body.className = 'era-' + e;
+  $('era-label').setAttribute('data-i18n', 'era' + e);
+  $('era-label').textContent = I18N[lang]['era' + e];
+  $('era-text').setAttribute('data-i18n', 'desc' + e);
+  $('era-text').textContent = I18N[lang]['desc' + e];
+  for (var di = 0; di < eraDots.length; di++){
+    var cls = 'era-dot ec' + di;
+    if (di === e) cls += ' active';
+    else if (di < e) cls += ' past';
+    eraDots[di].className = cls;
   }
+}
 
+function updateUI(e){
+  setBar('food', stats.food);
+  setBar('safety', stats.safety);
+  setBar('conv', stats.convenience);
+  setBar('comfort', stats.comfort);
+  setBar('meaning', stats.meaning);
+  setBar('crisis', stats.crisis);
+  setBar('boredom', boredom);
   $('pop-count').textContent = particles.length;
-
   var y = Math.floor(year);
   $('year-display').textContent = lang === 'ja' ? y.toLocaleString() + ' 年' : 'Year ' + y.toLocaleString();
-
-  if (e !== era){
-    era = e;
-    document.body.className = 'era-' + e;
-    $('era-label').setAttribute('data-i18n', 'era' + e);
-    $('era-label').textContent = I18N[lang]['era' + e];
-    $('era-text').setAttribute('data-i18n', 'desc' + e);
-    $('era-text').textContent = I18N[lang]['desc' + e];
-    for (var di = 0; di < eraDots.length; di++){
-      var cls = 'era-dot ec' + di;
-      if (di === e) cls += ' active';
-      else if (di < e) cls += ' past';
-      eraDots[di].className = cls;
-    }
-  }
+  if (e !== era){ era = e; applyEra(e); }
 }
 
 function tick(){
-  if (paused || ended) return;
-
   var now = performance.now();
+
+  if (phase === 'ruinanim'){
+    lastTick = now;
+    ruinTimer--;
+    for (var i = particles.length - 1; i >= 0; i--){
+      var rp = particles[i];
+      rp.x += rp.vx; rp.y += rp.vy; rp.vy += .0007; rp.vx *= 1.004;
+      rp.opacity -= .016;
+      rp.thought = null;
+      if (rp.opacity <= 0) particles.splice(i, 1);
+    }
+    render();
+    if (ruinTimer <= 0) showEnding('ruin');
+    return;
+  }
+
+  if (phase !== 'playing'){ return; }
+
   var dt = Math.min(now - lastTick, 100);
   lastTick = now;
+  var dy = SPEEDS[speedIdx] * YEAR_PER_SEC * dt / 1000;
+  year = Math.min(year + dy, END_YEAR);
+  applyDrift(stats, dy);
+  boredom = computeBoredom();
+  var e = deriveEra();
 
-  year = Math.min(year + SPEEDS[speedIdx] * YEAR_PER_SEC * dt / 1000, 10000);
-  var e = getEra(year);
-  var stats = computeStats(year);
+  var target = targetPop();
+  if (particles.length < target && Math.random() < .18) particles.push(spawnParticle());
+  if (particles.length > target && Math.random() < .10) particles.splice((Math.random() * particles.length) | 0, 1);
 
-  var target = targetPop(stats);
-  if (particles.length < target && Math.random() < .15){
-    particles.push(spawnParticle());
-  }
-
-  var deathRate = (1 - stats.safety) * .003;
+  var deathRate = (1 - stats.safety / 100) * .0026 + (stats.crisis / 100) * .0022;
   for (var di = particles.length - 1; di >= 0; di--){
-    if (Math.random() < deathRate){
-      particles.splice(di, 1);
-    }
+    if (Math.random() < deathRate) particles.splice(di, 1);
   }
-
-  for (var pi = 0; pi < particles.length; pi++){
-    updateParticle(particles[pi], e);
-  }
+  for (var pi = 0; pi < particles.length; pi++) updateParticle(particles[pi], e);
 
   render();
-  updateUI(stats, e);
+  updateUI(e);
 
-  if (year >= 10000 && !ended){
-    ended = true;
-    showEnding(stats);
+  if (stats.crisis >= 100){ startRuin(); return; }
+  if (nextEvent < EVENTS.length && year >= EVENTS[nextEvent].year){ openChoice(nextEvent); return; }
+  if (year >= END_YEAR){ finalize(); }
+}
+
+function hintHTML(fx){
+  var defs = [['food','sFood'],['safety','sSafety'],['convenience','sConv'],['comfort','sComfort'],['meaning','sMeaning'],['crisis','sCrisis']];
+  var out = '';
+  for (var i = 0; i < defs.length; i++){
+    var v = fx[defs[i][0]];
+    if (!v) continue;
+    var big = Math.abs(v) >= 12;
+    var ar = v > 0 ? (big ? '↑↑' : '↑') : (big ? '↓↓' : '↓');
+    var bad = defs[i][0] === 'crisis' ? (v > 0) : (v < 0);
+    out += '<span class="hint ' + (bad ? 'hint-bad' : 'hint-good') + '">' + I18N[lang][defs[i][1]] + ar + '</span>';
+  }
+  return out;
+}
+
+function renderChoice(idx){
+  var ev = EVENTS[idx];
+  var e = deriveEra();
+  var optsHTML = '';
+  for (var i = 0; i < ev.options.length; i++){
+    var o = ev.options[i];
+    optsHTML += '<button class="opt-btn" data-opt="' + i + '">' +
+      '<span class="opt-label">' + o.label[lang] + '</span>' +
+      '<span class="opt-hints">' + hintHTML(o.fx) + '</span></button>';
+  }
+  $('choice-card').innerHTML =
+    '<div class="choice-meta">' +
+      '<span class="choice-era" style="color:' + ERA_PCOL[e] + '">' + I18N[lang]['era' + e] + '</span>' +
+      '<span class="choice-num">' + I18N[lang].crossroad + ' ' + (idx + 1) + ' / ' + EVENTS.length + '</span>' +
+    '</div>' +
+    '<h2 class="choice-title">' + ev.title[lang] + '</h2>' +
+    '<p class="choice-situation">' + ev.situation[lang] + '</p>' +
+    '<div class="choice-opts">' + optsHTML + '</div>';
+}
+
+function openChoice(idx){
+  phase = 'choice';
+  currentEvent = idx;
+  renderChoice(idx);
+  $('choice').classList.add('show');
+}
+
+function pickOption(optIdx){
+  if (phase !== 'choice') return;
+  var fx = EVENTS[currentEvent].options[optIdx].fx;
+  for (var k in fx){ if (fx.hasOwnProperty(k)) stats[k] = clamp(stats[k] + fx[k], 0, 100); }
+  nextEvent = currentEvent + 1;
+  $('choice').classList.remove('show');
+  boredom = computeBoredom();
+  updateUI(deriveEra());
+  if (stats.crisis >= 100){ startRuin(); return; }
+  phase = 'playing';
+  lastTick = performance.now();
+}
+
+function startRuin(){
+  phase = 'ruinanim';
+  ruinTimer = 72;
+  lastTick = performance.now();
+  $('choice').classList.remove('show');
+  for (var i = 0; i < particles.length; i++){
+    var p = particles[i];
+    var ang = Math.random() * 6.2832;
+    var spd = .006 + Math.random() * .015;
+    p.vx = Math.cos(ang) * spd;
+    p.vy = Math.sin(ang) * spd - .004;
   }
 }
 
-function showEnding(stats){
-  paused = true;
-  var fs = $('final-stats');
-  var labels = [
-    [I18N[lang].sFood, stats.food, 'food-fill'],
-    [I18N[lang].sSafety, stats.safety, 'safety-fill'],
-    [I18N[lang].sConv, stats.convenience, 'conv-fill'],
-    [I18N[lang].sComfort, stats.comfort, 'comfort-fill'],
-    [I18N[lang].sMeaning, stats.meaning, 'meaning-fill'],
-    [I18N[lang].sBoredom, stats.boredom, 'boredom-fill']
+function finalize(){
+  var t = evaluateEnding();
+  if (t === 'ruin') startRuin();
+  else showEnding(t);
+}
+
+function getFoundEndings(){
+  try { return JSON.parse(localStorage.getItem('bk_endings') || '[]'); }
+  catch (e){ return []; }
+}
+function recordEnding(type){
+  try {
+    var f = getFoundEndings();
+    if (f.indexOf(type) < 0){ f.push(type); localStorage.setItem('bk_endings', JSON.stringify(f)); }
+  } catch (e){}
+}
+
+function renderEnding(type){
+  var L = lang, E = ENDINGS[type];
+  var rows = [
+    [I18N[L].sFood, stats.food, 'food-fill'],
+    [I18N[L].sSafety, stats.safety, 'safety-fill'],
+    [I18N[L].sConv, stats.convenience, 'conv-fill'],
+    [I18N[L].sComfort, stats.comfort, 'comfort-fill'],
+    [I18N[L].sMeaning, stats.meaning, 'meaning-fill'],
+    [I18N[L].sCrisis, stats.crisis, 'crisis-fill'],
+    [I18N[L].sBoredom, boredom, 'boredom-fill']
   ];
-  fs.innerHTML = labels.map(function(it){
-    var pct = Math.round(it[1] * 100);
+  var fsHTML = rows.map(function(it){
+    var pct = Math.round(it[1]);
     return '<div class="fs-row"><span class="fs-label">' + it[0] +
       '</span><div class="fs-bar"><div class="fs-fill ' + it[2] +
-      '" style="width:0"></div></div><span class="fs-val">' + pct + '%</span></div>';
+      '" data-pct="' + pct + '" style="width:0"></div></div><span class="fs-val">' + pct + '%</span></div>';
   }).join('');
+  var found = getFoundEndings();
+  var order = ['ruin','stagnation','boredom','harmony'];
+  var dots = order.map(function(k){
+    return '<span class="dot' + (found.indexOf(k) >= 0 ? ' found' : '') + '"></span>';
+  }).join('');
+  $('ending-inner').innerHTML =
+    '<div class="end-badge">' + E.name[L] + '</div>' +
+    '<h1>' + E.title[L] + '</h1>' +
+    '<p class="end-sub">' + E.sub[L] + '</p>' +
+    '<div id="final-stats">' + fsHTML + '</div>' +
+    '<p class="end-reflect">' + E.reflect[L] + '</p>' +
+    '<div class="end-tracker">' + I18N[L].endTracker + ' ' + found.length + ' / 4 &nbsp; ' + dots + '</div>' +
+    '<button class="overlay-btn end-btn" id="btn-restart">' + I18N[L].endRestart + '</button>';
+  $('btn-restart').addEventListener('click', restart);
+}
 
+function fillFinalStats(){
+  var fills = document.querySelectorAll('#ending .fs-fill');
+  for (var i = 0; i < fills.length; i++){
+    fills[i].style.width = fills[i].getAttribute('data-pct') + '%';
+  }
+}
+
+function showEnding(type){
+  phase = 'ended';
+  endingType = type;
+  recordEnding(type);
+  renderEnding(type);
   var el = $('ending');
-  el.classList.remove('hidden');
+  el.className = 'overlay hidden ' + ENDINGS[type].cls;
   setTimeout(function(){
+    el.classList.remove('hidden');
     el.classList.add('show');
-    setTimeout(function(){
-      var fills = el.querySelectorAll('.fs-fill');
-      for (var i = 0; i < fills.length; i++){
-        fills[i].style.width = Math.round(labels[i][1] * 100) + '%';
-      }
-    }, 1800);
+    setTimeout(fillFinalStats, 1300);
   }, 50);
 }
 
+function updateIntroTracker(){
+  var f = getFoundEndings();
+  var el = $('intro-tracker');
+  if (f.length > 0){
+    el.textContent = I18N[lang].endTracker + ' ' + f.length + ' / 4';
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
 function resetSim(){
-  year = 0; era = 0; speedIdx = 1; paused = true; ended = false;
+  stats = freshStats();
+  boredom = 0;
+  year = 0;
+  era = -1;
+  speedIdx = 1;
+  phase = 'intro';
+  nextEvent = 0;
+  endingType = null;
   particles = [];
-  document.body.className = 'era-0';
   $('speed-label').textContent = '1x';
   $('btn-pause').textContent = '⏸';
-  var stats = computeStats(0);
-  updateUI(stats, 0);
-  for (var i = 0; i < eraDots.length; i++){
-    eraDots[i].className = 'era-dot ec' + i + (i === 0 ? ' active' : '');
-  }
+  $('choice').classList.remove('show');
+  updateUI(0);
+  updateIntroTracker();
   render();
 }
 
-$('btn-start').addEventListener('click', function(){
-  $('intro').classList.add('hidden');
-  resizeCanvas();
-  for (var i = 0; i < 25; i++) particles.push(spawnParticle());
-  paused = false;
-  lastTick = performance.now();
-  $('btn-pause').textContent = '⏸';
-  render();
-});
-
-$('btn-restart').addEventListener('click', function(){
+function restart(){
   $('ending').classList.remove('show');
   $('ending').classList.add('hidden');
   resetSim();
   $('intro').classList.remove('hidden');
+}
+
+function startGame(){
+  $('intro').classList.add('hidden');
+  resizeCanvas();
+  particles = [];
+  for (var i = 0; i < 20; i++) particles.push(spawnParticle());
+  phase = 'playing';
+  lastTick = performance.now();
+  render();
+}
+
+$('btn-start').addEventListener('click', startGame);
+$('btn-reset').addEventListener('click', restart);
+
+$('choice').addEventListener('click', function(ev){
+  var btn = ev.target.closest ? ev.target.closest('.opt-btn') : null;
+  if (btn) pickOption(parseInt(btn.getAttribute('data-opt'), 10));
 });
 
 $('btn-pause').addEventListener('click', function(){
-  if (ended) return;
-  paused = !paused;
-  if (!paused) lastTick = performance.now();
-  this.textContent = paused ? '▶' : '⏸';
+  if (phase === 'playing'){ phase = 'paused'; this.textContent = '▶'; }
+  else if (phase === 'paused'){ phase = 'playing'; lastTick = performance.now(); this.textContent = '⏸'; }
 });
 
 $('btn-faster').addEventListener('click', function(){
@@ -614,13 +929,6 @@ $('btn-slower').addEventListener('click', function(){
   $('speed-label').textContent = SPEEDS[speedIdx] + 'x';
 });
 
-$('btn-reset').addEventListener('click', function(){
-  $('ending').classList.remove('show');
-  $('ending').classList.add('hidden');
-  resetSim();
-  $('intro').classList.remove('hidden');
-});
-
 function applyLang(l){
   lang = l;
   var btns = document.querySelectorAll('.lang-btn');
@@ -630,13 +938,13 @@ function applyLang(l){
   var els = document.querySelectorAll('[data-i18n]');
   for (var j = 0; j < els.length; j++){
     var key = els[j].getAttribute('data-i18n');
-    if (I18N[l][key]){
-      if (els[j].tagName === 'INPUT') els[j].placeholder = I18N[l][key];
-      else els[j].innerHTML = I18N[l][key];
-    }
+    if (I18N[l][key]) els[j].innerHTML = I18N[l][key];
   }
   var yy = Math.floor(year);
   $('year-display').textContent = l === 'ja' ? yy.toLocaleString() + ' 年' : 'Year ' + yy.toLocaleString();
+  if (phase === 'choice') renderChoice(currentEvent);
+  if (phase === 'ended' && endingType){ renderEnding(endingType); fillFinalStats(); }
+  updateIntroTracker();
 }
 
 var langBtns = document.querySelectorAll('.lang-btn');
@@ -645,6 +953,9 @@ for (var li = 0; li < langBtns.length; li++){
 }
 
 resizeCanvas();
+era = -1;
+updateUI(0);
+updateIntroTracker();
 render();
 setInterval(tick, 16);
 
